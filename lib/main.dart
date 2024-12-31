@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'navbar.dart';
+import 'questions.dart';
 
 void main() {
   runApp(const MainApp());
 }
 
 final selectedButtonProvider = StateProvider<int?>((ref) => null);
+final questionProvider = StateProvider<int>((ref) => 0);
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -42,33 +44,40 @@ class Quiz extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Image.asset(
-                  'assets/logo.png',
-                  height: 40,
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 10),
-                  child: Text(
-                    'Bool School',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w400,
+        title: Padding(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 15,
+            right: 15,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/logo.png',
+                    height: 35,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: Text(
+                      'Bool School',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            Icon(
-              Icons.menu,
-              size: 40,
-              color: Colors.white,
-            )
-          ],
+                ],
+              ),
+              Icon(
+                Icons.menu,
+                size: 35,
+                color: Colors.white,
+              )
+            ],
+          ),
         ),
         backgroundColor: Colors.transparent,
       ),
@@ -119,11 +128,13 @@ class Quiz extends StatelessWidget {
   }
 }
 
-class QuestionCard extends StatelessWidget {
+class QuestionCard extends ConsumerWidget {
   const QuestionCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final questionIndex = ref.watch(questionProvider);
+
     return Padding(
       padding: EdgeInsets.all(20),
       child: Container(
@@ -138,17 +149,37 @@ class QuestionCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Image.asset(
-                    'assets/left-arrow.png',
-                    height: 50,
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: const Color.fromARGB(187, 158, 158, 158),
+                    ),
+                    onPressed: () {
+                      final currentIndex =
+                          ref.read(questionProvider.notifier).state;
+
+                      if (currentIndex > 0) {
+                        ref.read(questionProvider.notifier).state--;
+                      }
+                    },
                   ),
                   Image.asset(
                     'assets/algebra.png',
                     height: 50,
                   ),
-                  Image.asset(
-                    'assets/right-arrow.png',
-                    height: 50,
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_forward_ios,
+                      color: const Color.fromARGB(187, 158, 158, 158),
+                    ),
+                    onPressed: () {
+                      final currentIndex =
+                          ref.read(questionProvider.notifier).state;
+
+                      if (currentIndex < questions.length - 1) {
+                        ref.read(questionProvider.notifier).state++;
+                      }
+                    },
                   ),
                 ],
               ),
@@ -156,7 +187,7 @@ class QuestionCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(bottom: 5),
               child: Text(
-                'Question 1',
+                'Question ${questionIndex + 1}',
                 style: TextStyle(
                   color: Colors.blue.shade800,
                   fontWeight: FontWeight.bold,
@@ -172,7 +203,7 @@ class QuestionCard extends StatelessWidget {
                   child: Opacity(
                     opacity: 0.8,
                     child: Text(
-                      'Boolean algebra is a branch of algebra that was formulated by _______',
+                      questions[questionIndex]['question'] as String,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -180,54 +211,42 @@ class QuestionCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(25),
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: (questions[questionIndex]['options'] as List<String>)
+                    .map((option) {
+                  return ChoiceButton(
+                    text: option,
+                    index: (questions[questionIndex]['options'] as List<String>)
+                        .indexOf(option),
+                  );
+                }).toList(),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ChoiceButton(
-                    text: 'Rihanna Fenty',
-                    index: 0,
-                  ),
-                  ChoiceButton(
-                    text: 'John Doe',
-                    index: 1,
-                  ),
-                  ChoiceButton(
-                    text: 'George Boole',
-                    index: 2,
-                  ),
-                  ChoiceButton(
-                    text: 'George Washington',
-                    index: 3,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 15),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            side: BorderSide(color: Colors.blue.shade900),
-                            fixedSize: Size.fromWidth(200),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5)),
-                            ),
-                            backgroundColor:
-                                const Color.fromARGB(71, 158, 158, 158),
-                          ),
-                          child: Text(
-                            'Evaluate',
-                            style: TextStyle(color: Colors.blue.shade900),
-                          ),
-                        )
-                      ],
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      side: BorderSide(color: Colors.blue.shade900),
+                      fixedSize: Size.fromWidth(200),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5)),
+                      ),
+                      backgroundColor: const Color.fromARGB(71, 158, 158, 158),
+                    ),
+                    child: Text(
+                      'Evaluate',
+                      style: TextStyle(color: Colors.blue.shade900),
                     ),
                   )
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),
