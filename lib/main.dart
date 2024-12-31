@@ -9,6 +9,8 @@ void main() {
 
 final selectedButtonProvider = StateProvider<int?>((ref) => null);
 final questionProvider = StateProvider<int>((ref) => 0);
+final evaluateButtonProvider =
+    StateProvider<Color>((ref) => const Color.fromARGB(71, 158, 158, 158));
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -160,6 +162,8 @@ class QuestionCard extends ConsumerWidget {
 
                       if (currentIndex > 0) {
                         ref.read(questionProvider.notifier).state--;
+                        ref.read(evaluateButtonProvider.notifier).state =
+                            const Color.fromARGB(71, 158, 158, 158);
                       }
                     },
                   ),
@@ -178,6 +182,8 @@ class QuestionCard extends ConsumerWidget {
 
                       if (currentIndex < questions.length - 1) {
                         ref.read(questionProvider.notifier).state++;
+                        ref.read(evaluateButtonProvider.notifier).state =
+                            const Color.fromARGB(71, 158, 158, 158);
                       }
                     },
                   ),
@@ -230,14 +236,23 @@ class QuestionCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      final selectedIndex = ref.read(selectedButtonProvider);
+                      final isCorrect =
+                          questions[questionIndex]['answer'] == selectedIndex;
+
+                      ref.read(evaluateButtonProvider.notifier).state =
+                          isCorrect
+                              ? Colors.green.shade400
+                              : Colors.red.shade400;
+                    },
                     style: TextButton.styleFrom(
                       side: BorderSide(color: Colors.blue.shade900),
                       fixedSize: Size.fromWidth(200),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(5)),
                       ),
-                      backgroundColor: const Color.fromARGB(71, 158, 158, 158),
+                      backgroundColor: ref.watch(evaluateButtonProvider),
                     ),
                     child: Text(
                       'Evaluate',
@@ -270,6 +285,8 @@ class ChoiceButton extends ConsumerWidget {
     return TextButton(
       onPressed: () {
         ref.read(selectedButtonProvider.notifier).state = index;
+        ref.read(evaluateButtonProvider.notifier).state =
+            const Color.fromARGB(71, 158, 158, 158);
       },
       style: TextButton.styleFrom(
         fixedSize: Size.fromWidth(400),
