@@ -20,4 +20,10 @@ flutter:
     - assets/logo.png
     - assets/header.png
     - assets/algebra.png
+    - assets/home.png
+    - assets/learn.png
+    - assets/quiz.png
+    - assets/profile.png
+    - assets/left-arrow.png
+    - assets/right-arrow.png
   uses-material-design: true
