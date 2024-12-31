@@ -1,28 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'navbar.dart';
 
 void main() {
   runApp(const MainApp());
 }
+
+final selectedButtonProvider = StateProvider<int?>((ref) => null);
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.blue,
-                Colors.blue.shade800,
-                Colors.blue.shade900
-              ]),
+    return ProviderScope(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.blue,
+                  Colors.blue.shade800,
+                  Colors.blue.shade900
+                ]),
+          ),
+          child: Quiz(),
         ),
-        child: Quiz(),
       ),
     );
   }
@@ -37,18 +43,31 @@ class Quiz extends StatelessWidget {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset(
-              'assets/logo.png',
-              height: 40,
+            Row(
+              children: [
+                Image.asset(
+                  'assets/logo.png',
+                  height: 40,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text(
+                    'Bool School',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Text(
-              'Bool School',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            Icon(
+              Icons.menu,
+              size: 40,
+              color: Colors.white,
+            )
           ],
         ),
         backgroundColor: Colors.transparent,
@@ -165,10 +184,22 @@ class QuestionCard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  QuestionChoice(text: 'Rihanna Fenty'),
-                  QuestionChoice(text: 'John Doe'),
-                  QuestionChoice(text: 'George Boole'),
-                  QuestionChoice(text: 'George Washington'),
+                  ChoiceButton(
+                    text: 'Rihanna Fenty',
+                    index: 0,
+                  ),
+                  ChoiceButton(
+                    text: 'John Doe',
+                    index: 1,
+                  ),
+                  ChoiceButton(
+                    text: 'George Boole',
+                    index: 2,
+                  ),
+                  ChoiceButton(
+                    text: 'George Washington',
+                    index: 3,
+                  ),
                   Padding(
                     padding: EdgeInsets.only(top: 15),
                     child: Row(
@@ -204,67 +235,34 @@ class QuestionCard extends StatelessWidget {
   }
 }
 
-class QuestionChoice extends StatelessWidget {
+class ChoiceButton extends ConsumerWidget {
   final String text;
-  const QuestionChoice({super.key, required this.text});
+  final int index;
+  const ChoiceButton({super.key, required this.text, required this.index});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedIndex = ref.watch(selectedButtonProvider);
+    final isSelected = selectedIndex == index;
+    final backgroundColor = isSelected
+        ? Colors.blue.shade100
+        : const Color.fromARGB(71, 158, 158, 158);
+
     return TextButton(
-      onPressed: () {},
+      onPressed: () {
+        ref.read(selectedButtonProvider.notifier).state = index;
+      },
       style: TextButton.styleFrom(
         fixedSize: Size.fromWidth(400),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(5)),
         ),
-        backgroundColor:
-            const Color.fromARGB(71, 158, 158, 158), // Background color
+        backgroundColor: backgroundColor, // Background color
       ),
       child: Text(
         text,
         style:
             TextStyle(color: Colors.blue.shade800, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class NavBar extends StatelessWidget {
-  const NavBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Image.asset(
-            'assets/home.png',
-            height: 40,
-          ),
-          Opacity(
-            opacity: 0.5,
-            child: Image.asset(
-              'assets/learn.png',
-              height: 40,
-            ),
-          ),
-          Opacity(
-            opacity: 0.5,
-            child: Image.asset(
-              'assets/quiz.png',
-              height: 40,
-            ),
-          ),
-          Opacity(
-            opacity: 0.5,
-            child: Image.asset(
-              'assets/profile.png',
-              height: 40,
-            ),
-          ),
-        ],
       ),
     );
   }
